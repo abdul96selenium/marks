@@ -1,11 +1,10 @@
+from flask import Flask, request, render_template
 import pandas as pd
-from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
-from flask import Flask, request, jsonify
 
 # Load the dataset
-data = pd.read_csv('C:\\Users\\data.csv')
-df = pd.DataFrame(data)
+dataset = pd.read_csv('C:\\Users\\abdul\\Downloads\\New folder\\data.csv')
+df = pd.DataFrame(dataset)
 
 # Split the data into features and target variable
 dataset.columns[dataset.isna().any()]
@@ -17,22 +16,21 @@ y = df['marks']
 model = LinearRegression()
 model.fit(X, y)
 
-# Create Flask app
-app = Flask(__name__)
+app = Flask(__name__, template_folder='templates')
+
+@app.route('/')
+def home():
+    return render_template('index.html')
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    # Get user input from the request
-    user_input = request.json
-
-    # Prepare the user input for prediction
-    user_df = pd.DataFrame(user_input)
-    
-    # Make predictions using the trained model
-    predictions = model.predict(user_df)
-
-    # Return the predictions as a JSON response
-    return jsonify({'predictions': predictions.tolist()})
+    hours = float(request.form['hours'])
+    age = float(request.form['age'])
+    internet = float(request.form['internet'])
+    new_cust = [[hours, age, internet]]
+    result_value = model.predict(new_cust)
+    prediction_text = result_value[0]
+    return render_template('index.html', prediction=prediction_text)
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
